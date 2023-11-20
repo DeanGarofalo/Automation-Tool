@@ -51,7 +51,6 @@ def main():
     final_filename = ""   
     if len(sys.argv) >= 2:
         args = parser.parse_args()
-        print(args.filename)
         # Clean up filename for a few scenarios
         args.filename = sanatize_filepath(args.filename)
         if is_filepath_legit(args.filename):
@@ -70,7 +69,8 @@ def main():
             if is_filepath_legit(file_path):
                 final_filename = file_path
                 break
- 
+    # DEBUG
+    print("File path:", final_filename)
     # Replace filename here with final_filename. Hardcoded to make my life easier for now.
     wb = load_workbook(filename = '/mnt/c/Users/dgame/Downloads/Excels/V2/test.xlsx', read_only=True)
 
@@ -109,7 +109,7 @@ def main():
 def sanatize_filepath(file_path: str) -> str:
     if str(file_path).startswith("~"):
         file_path = os.path.expanduser(file_path)
-        # Check if its a local or relative path, if local add the full path to the filename
+    # Check if its a local or relative path, if local add the full path to the filename
     if not os.path.isabs(file_path):
         file_path = os.path.join(os.getcwd(), file_path)
     return file_path
@@ -118,6 +118,7 @@ def is_filepath_legit(file_path: str) -> bool:
     if os.path.exists(file_path) and os.path.isfile(file_path):
         if not str(file_path).lower().endswith(".xlsx"):
             print("Not an Excel file. Try again")
+            return False
         else:
             return True
     else:
