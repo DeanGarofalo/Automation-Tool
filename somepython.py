@@ -33,20 +33,48 @@ SSH functions I need:
     Bash command function
     More I'm forgetting at the moment
 
-TODO rewrite support commandline args, should see if i want to do it by hand or use argparse as well. Might be better off because its more versatile    
+TODO ☑️ rewrite support commandline args, should see if i want to do it by hand or use argparse as well. Might be better off because its more versatile    
     
 """
 from openpyxl import load_workbook
-
 from Stuff.Server import Server
-
+import argparse
+import sys
+import os
 
 def main():
+    # First driver to get the file as input, either through commandline argument on launch or through interactive user input
+    parser = argparse.ArgumentParser(prog="Automation App", description="This script takes in a .XLSX file and run sysadmin like functions on its contents.")
+    parser.add_argument('filename')
+    parser.add_argument("-v", default=1, help="verbose logging", type=int)
     
+    final_filename = ""   
+    if len(sys.argv) >= 2:
+        args = parser.parse_args()
+        print(args.filename)
+        # Clean up filename for a few scenarios
+        args.filename = sanatize_filepath(args.filename)
+        if is_filepath_legit(args.filename):
+                final_filename = args.filename
+        else:
+            while True:
+                args.filename = input("Please enter the Excel file path to use: ")
+                if is_filepath_legit(args.filename):
+                    final_filename = args.filename
+                    break
+    else:
+        print("No arguments provided.")
+        while True:
+            file_path = input("Please enter the Excel file path to use: ")
+            file_path = sanatize_filepath(file_path)
+            if is_filepath_legit(file_path):
+                final_filename = file_path
+                break
+ 
+    # Replace filename here with final_filename. Hardcoded to make my life easier for now.
     wb = load_workbook(filename = '/mnt/c/Users/dgame/Downloads/Excels/V2/test.xlsx', read_only=True)
 
     selected_app = Find_apps(wb)
-
 
     match selected_app:
         case "C" | "C5" | "CB" :
@@ -78,7 +106,23 @@ def main():
 
 
 
+def sanatize_filepath(file_path: str) -> str:
+    if str(file_path).startswith("~"):
+        file_path = os.path.expanduser(file_path)
+        # Check if its a local or relative path, if local add the full path to the filename
+    if not os.path.isabs(file_path):
+        file_path = os.path.join(os.getcwd(), file_path)
+    return file_path
 
+def is_filepath_legit(file_path: str) -> bool:
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        if not str(file_path).lower().endswith(".xlsx"):
+            print("Not an Excel file. Try again")
+        else:
+            return True
+    else:
+        print("Invalid file path or file does not exist. Please enter a valid file path.")
+        return False
 
 
 
