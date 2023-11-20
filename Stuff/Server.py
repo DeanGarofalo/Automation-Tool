@@ -10,8 +10,8 @@ class Server:
         self.ip_address: IPv4Address = ip_address
         self._ha_type: str = ha_type
         self._subnet: str = subnet
-        self._x_coord = x_coord
-        self._y_coord = y_coord
+        self._x_coord: int =  x_coord
+        self._y_coord: int = y_coord
 
     def __str__(self):
         return f"""
@@ -24,14 +24,13 @@ Y-coord {self._y_coord}"""
     
     @property
     def ip_address(self) -> IPv4Address:
-        return self.ip_address
+        return self._ip_address
 
     @ip_address.setter
     def ip_address(self, ip_address: IPv4Address) -> None:
-        if is_private_ipv4(ip_address):
-            self.ip_address = ip_address
-        raise ValueError(f"Invalid IP of {ip_address}")
-
+        if not is_private_ipv4(ip_address):
+            raise ValueError(f"Invalid IP of {ip_address}")
+        self._ip_address = ip_address
 
  
 def is_private_ipv4(ip: IPv4Address):

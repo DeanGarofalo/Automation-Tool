@@ -97,12 +97,22 @@ def main():
         case _:
             raise ValueError("Invalid Sheet. Exiting")
 
-
-    test_Server = Server("DG1234", "192.168.0.1", "HA2R", "subnet1", 22, 17)
-    print(test_Server)
+    # Debug
+    #test_Server = Server("DG1234", "123.168.0.1", "HA2R", "subnet1", 22, 17)
+    #print(test_Server)
 
     print(sheet['C18'].value)
     print("Gotta start somewhere right?")
+
+
+
+
+
+
+
+
+
+
 
 
 
