@@ -38,6 +38,7 @@ TODO ☑️ rewrite support commandline args, should see if i want to do it by h
 """
 from openpyxl import load_workbook
 from Stuff.Server import Server
+from Stuff.Apps import C_app
 import argparse
 import sys
 import os
@@ -82,6 +83,7 @@ def main():
             # run C function
             # C(sheet)
             print("Run C")
+            C_app.check_C_app_implementation_type(wb, sheet)
             ...
         case "B":
             sheet = wb[selected_app]
@@ -101,8 +103,9 @@ def main():
     #test_Server = Server("DG1234", "123.168.0.1", "HA2R", "subnet1", 22, 17)
     #print(test_Server)
 
-    print(sheet['C18'].value)
+ 
     print("Gotta start somewhere right?")
+    
 
 
 
