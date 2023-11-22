@@ -4,13 +4,15 @@ from ipaddress import AddressValueError
 class Server:
     
     
-    def __init__(self, hostname: str, ip_address: IPv4Address, ha_type: str, subnet: str, x_coord, y_coord ) -> None:
+    def __init__(self, hostname: str, ip_address: IPv4Address, ha_type: str, subnet: str, x_coord: int, y_coord: int, username: str, password: str ) -> None:
         self._hostname: str = hostname.strip()
         self.ip_address: str = ip_address
         self._ha_type: str = ha_type.strip()
         self._subnet: str = subnet.strip()
         self._x_coord: int = x_coord
         self._y_coord: int = y_coord
+        self._username: str = username
+        self._password: str = password
 
     def __str__(self):
         return f"""
@@ -18,8 +20,10 @@ Hostname: {self._hostname}
 IP Address: {self.ip_address}
 HA Type: {self._ha_type}
 Subnet: {self._subnet}
-X-coord: {self._x_coord}
-Y-coord {self._y_coord}"""
+Username: {self._username}
+Password: {self._password}
+Coords: [{self._x_coord}, {self._y_coord}]
+"""
     
     @property
     def ip_address(self) -> str:

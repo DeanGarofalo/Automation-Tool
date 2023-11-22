@@ -11,20 +11,20 @@ High level functions i need:
 ☑️ Find_Apps():                     Discover what valid applications are in the workbook, and return those options back to the user to decide what they want to work on, and then launch that apps routine.
 ☑️ Server class(ip,,pass,etc):      Build the class for the server object for how ill store all the servers information im parsing excel for
 ☑️ Build_server_object():              Parse the workbook and build out a data structure of the servers found
-🚧 Is_valid_config():                  Returns a boolean for if the config is valid or not. If its not valid exit and tell the user to fix the excel
+☑️ Is_valid_config():                  Returns a boolean for if the config is valid or not. If its not valid exit and tell the user to fix the excel
 
 
 These will be called after the user provides which app they want to work on.
     These will need to take in a int of the number of servers and possibly the type name in a cell
-    Find_deployment_type_App-C():     Determine what type of deployment the app is.
+☑️ Find_deployment_type_App-C():     Determine what type of deployment the app is.
     Find_deployment_type_App-B():
     Find_deployment_type_App-D():
     Find_deployment_type_App-S():
 
 Helper functions I need:
-    Count_servers():
-    Is_valid_IPAddress():
-    Is_valid_HA():      Basically look at the count servers output and compare it with what the excel cell says it should be and make sure they match
+☑️ Count_servers():
+☑️ Is_valid_IPAddress():
+☑️ Is_valid_HA():      Basically look at the count servers output and compare it with what the excel cell says it should be and make sure they match
     Plus way way more
 
 SSH functions I need:
@@ -76,6 +76,9 @@ def main():
     # Replace filename here with final_filename. Hardcoded to make my life easier for now.
     wb = load_workbook(filename = '/mnt/c/Users/dgame/Downloads/Excels/V2/test.xlsx', read_only=True)
 
+    # this is where all the Server objects will go
+    list_of_servers = []
+    
     selected_app = Find_apps(wb)
 
     match selected_app:
@@ -84,7 +87,8 @@ def main():
             # run C function
             # C(sheet)
             print("Run C")
-            C_app.get_C_app_implementation_type(sheet)
+            #C_app.get_C_app_implementation_type(sheet)
+            C_app.main(sheet, list_of_servers)
             ...
         case "B":
             sheet = wb[selected_app]
