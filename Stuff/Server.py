@@ -1,6 +1,5 @@
-import ipaddress
-
-from ipaddress import IPv4Address
+from ipaddress import IPv4Address #
+from ipaddress import AddressValueError
 
 class Server:
     
@@ -32,19 +31,21 @@ Y-coord {self._y_coord}"""
             raise ValueError(f"Invalid IP of {ip_address.replace(' ' , '')}")
         self._ip_address = ip_address.replace(" ", "")
 
- 
+ # The logic here was to validate the IP by checking if it was in a IPv4 format AND a private address
+ # But then I looked at old workbooks and remembered some IT departments do some wack **** and assign allocated public IP's on private internal networks
+ # So I can't also deem it must be private, so this is just going to stay here and maybe I'll use it later to throw a warning to the user as a fyi
 def is_private_ipv4(ip: IPv4Address):
     try:
          # Create an IPv4 address object
-        ip_obj = ipaddress.IPv4Address(ip.replace(" ", ""))
+        ip_obj = IPv4Address(ip.replace(" ", ""))
         # Check if the address is in one of the private ranges
         return ip_obj.is_private
-    except ipaddress.AddressValueError:
+    except AddressValueError:
         return False
     
 def is_valid_ip(ip: IPv4Address) -> bool:
     try:
-        ip_obj = ipaddress.IPv4Address(ip.replace(" ", ""))
+        ip_obj = IPv4Address(ip.replace(" ", ""))
         return True
-    except ipaddress.AddressValueError:
+    except AddressValueError:
         return False

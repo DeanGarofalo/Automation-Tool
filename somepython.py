@@ -9,9 +9,9 @@ Or not think at all and start writing code until I see the problem. Likely.
 High level functions i need:
 
 ☑️ Find_Apps():                     Discover what valid applications are in the workbook, and return those options back to the user to decide what they want to work on, and then launch that apps routine.
-🚧 Server class(ip,,pass,etc):      Build the class for the server object for how ill store all the servers information im parsing excel for
-Build_server_object():              Parse the workbook and build out a data structure of the servers found
-Is_valid_config():                  Returns a boolean for if the config is valid or not. If its not valid exit and tell the user to fix the excel
+☑️ Server class(ip,,pass,etc):      Build the class for the server object for how ill store all the servers information im parsing excel for
+☑️ Build_server_object():              Parse the workbook and build out a data structure of the servers found
+🚧 Is_valid_config():                  Returns a boolean for if the config is valid or not. If its not valid exit and tell the user to fix the excel
 
 
 These will be called after the user provides which app they want to work on.
@@ -37,8 +37,9 @@ TODO ☑️ rewrite support commandline args, should see if i want to do it by h
     
 """
 from openpyxl import load_workbook
-from Stuff.Server import Server
+
 from Stuff.Apps import C_app
+
 import argparse
 import sys
 import os
@@ -83,7 +84,7 @@ def main():
             # run C function
             # C(sheet)
             print("Run C")
-            C_app.check_C_app_implementation_type(wb, sheet)
+            C_app.get_C_app_implementation_type(sheet)
             ...
         case "B":
             sheet = wb[selected_app]
@@ -99,12 +100,10 @@ def main():
         case _:
             raise ValueError("Invalid Sheet. Exiting")
 
-    # Debug
-    #test_Server = Server("DG1234", "123.168.0.1", "HA2R", "subnet1", 22, 17)
-    #print(test_Server)
+   
 
  
-    print("Gotta start somewhere right?")
+    print("END")
     
 
 
@@ -120,6 +119,17 @@ def main():
 
 
 def sanatize_filepath(file_path: str) -> str:
+    """
+    This takes in a str corresponding to a Unix file path location,
+    and cleans it up to prevent something unexpected happening.
+    We want full file paths to files. So no local/relative path nonsense
+
+    Args:
+        file_path (str): str corresponding to a Unix file path location
+
+    Returns:
+        str: str corresponding to the full file path location
+    """
     if str(file_path).startswith("~"):
         file_path = os.path.expanduser(file_path)
     # Check if its a local or relative path, if local add the full path to the filename
@@ -128,6 +138,14 @@ def sanatize_filepath(file_path: str) -> str:
     return file_path
 
 def is_filepath_legit(file_path: str) -> bool:
+    """Check to see that the file exists and is a valid non marco modern Excel file
+
+    Args:
+        file_path (str): sanatized str corresponding to the full file path location
+
+    Returns:
+        bool: Yes or no answer to the function question
+    """
     if os.path.exists(file_path) and os.path.isfile(file_path):
         if not str(file_path).lower().endswith(".xlsx"):
             print("Not an Excel file. Try again")
@@ -139,11 +157,17 @@ def is_filepath_legit(file_path: str) -> bool:
         return False
 
 
-
-
-
 def Find_apps(workbook):
-    # var with supported apps, maybe should be global instead of here?
+    """
+    Print out the discovered sheets and gets the users input for what App they want to work on.
+
+    Args:
+        workbook (Openpyxl.Workbook): Excel Workbook 
+
+    Returns:
+        selected_sheet (str): Returns the str of the app the user selected which in turn is the sheet to work on.
+    """
+    # var with supported apps, maybe should be global const instead of here?
     allowed_sheets = ["C", "C5", "D", "B", "S", "Networks", "VoIP"]
 
     # Get the sheet names
