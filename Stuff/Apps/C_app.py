@@ -5,11 +5,11 @@ import sys
 current_directory = os.path.dirname(os.path.realpath(__file__))
 project_directory = os.path.dirname(os.path.dirname(current_directory))
 sys.path.append(project_directory)
-print(current_directory)
-print(project_directory)
+#print(current_directory)
+#print(project_directory)
 #from Stuff import Server
 from Stuff.Server import Server, is_valid_ip
-from Stuff.Apps.Helper_functions import is_cell_green, is_cell_orange, get_cell_fill_color
+from Stuff.Excel_helpers import is_cell_green, is_cell_orange, get_cell_fill_color
 
 ## These guys are the general assumption I make where the relevant data should be.
 ## Changing them widens or tightens the search area the count function runs on, and effect the speed and accuracy of the server discovery
@@ -22,13 +22,10 @@ MIN_COL_RANGE = 1
 
 
 
-def main(sheet_name, the_servers :list):
-    # change this later
-    test_list = the_servers
-    #print("Counted:", count_C_app_servers(sheet_name, test_list, get_C_app_implementation_type(sheet_name)))
+def main(sheet_name, the_servers: list, debug_mode: bool):
     
     implementation_type: str = ""
-    match count_C_app_servers(sheet_name, test_list, get_C_app_implementation_type(sheet_name)):
+    match count_C_app_servers(sheet_name, the_servers, get_C_app_implementation_type(sheet_name)):
         case 1:
             implementation_type = "Single Server"
         case 2:
@@ -44,20 +41,17 @@ def main(sheet_name, the_servers :list):
     
     print("Read as", implementation_type)
     
-    if(is_valid_deployment(test_list, implementation_type)):
+    if(is_valid_deployment(the_servers, implementation_type)):
         print("Verified as", implementation_type)
 
   
-    # Test print out the list of Servers
-    for server in test_list:
-        print(server)
-
+    #DEBUG#############################
+    if debug_mode:
+        for server in the_servers:
+            print(server)
+    #DEBUG#############################
 
  
-
-
-
-
 
 
 
@@ -173,6 +167,7 @@ def is_valid_deployment(list_of_servers: list, implementation_type: str) -> bool
     """
     This function is messy but it makes sense to me and I have so much more code to write here so I'm not redoing this logic.
     Basically want to do one last thorough sanity check that everything is as expected and the program from here on knows exactly what data it has.
+    Also now it assigns a port to each server. I used to do this in a different function later on but might as well do it here and save running through the loop again later.
 
     Args:
         list_of_servers (list): This is the list of Server objects. Its used to count the servers and access their data now
@@ -184,11 +179,12 @@ def is_valid_deployment(list_of_servers: list, implementation_type: str) -> bool
     match implementation_type:
         case "Single Server":
             if len(list_of_servers) == 1:
-                "Verified as Single Server"
+                list_of_servers[0].port = 6001
                 return True
         case "Single Server and Reporting":
             if len(list_of_servers) == 2:
-                "Verified as Single Server and Reporting"
+                list_of_servers[0].port = 6001
+                list_of_servers[1].port = 6002
                 return True
         case "HA":
             if len(list_of_servers) == 4:
@@ -199,10 +195,16 @@ def is_valid_deployment(list_of_servers: list, implementation_type: str) -> bool
                     match server._ha_type:
                         case "Application Server":
                             app_server_count += 1
+                            if app_server_count == 1:
+                                server.port = 6001
+                            else:
+                                server.port = 7001
                         case "Master Database":
                             flag1 = True
+                            server.port = 6002
                         case "Standby Database":
                             flag2 = True
+                            server.port = 7002
                 if flag1 and flag2 and (app_server_count == 2):
                     return True
         case "HA with 1 Reporting":
@@ -214,13 +216,23 @@ def is_valid_deployment(list_of_servers: list, implementation_type: str) -> bool
                 for server in list_of_servers:
                     match server._ha_type:
                         case "Application Server":
+                            # The logic here is annoying and not bullet proof but its going to be over engineered and very long and at worse case if this goes wrong it just makes for a mismatched port forward between a DC later on
+                            # Basically we assume the first app server we parse is the primary. My old program used the subnet of the first server in the array but i dont feel like doing that right now and this works close enough
+                            #:6000's are DC1 :7000s are DC2, this really is only used in the port forwards and the port is a arbitrary one I go with and use in the SuperPuTTY profiles so this is all a waste of time explaining
                             app_server_count += 1
+                            if app_server_count == 1:
+                                server.port = 6001
+                            else:
+                                server.port = 7001
                         case "Master Database":
                             flag1 = True
+                            server.port = 6002
                         case "Standby Database":
                             flag2 = True
+                            server.port = 7002
                         case "Primary Reporting":
                             flag3 = True
+                            server.port = 6003
                 if flag1 and flag2 and flag3 and (app_server_count == 2):
                     return True
         case "HA with 2 Reporting":
@@ -234,14 +246,22 @@ def is_valid_deployment(list_of_servers: list, implementation_type: str) -> bool
                     match server._ha_type:
                         case "Application Server":
                             app_server_count += 1
+                            if app_server_count == 1:
+                                server.port = 6001
+                            else:
+                                server.port = 7001
                         case "Master Database":
                             flag1 = True
+                            server.port = 6002
                         case "Standby Database":
                             flag2 = True
+                            server.port = 7002
                         case "Primary Reporting":
                             flag3 = True
+                            server.port = 6003
                         case "DR Reporting":
                             flag4 = True
+                            server.port = 7003
                 if flag1 and flag2 and flag3 and flag4 and (app_server_count == 2):
                     return True
         case _:
@@ -269,9 +289,10 @@ def is_valid_deployment(list_of_servers: list, implementation_type: str) -> bool
 
 
 
-
+# Testing parameters
 if __name__ =="__main__":
     workbook = load_workbook(filename="/home/dean/test.xlsx", read_only=True)
     sheet_name = workbook["C"]
     test_list = []
-    main(sheet_name, test_list)
+    debug_mode = True
+    main(sheet_name, test_list, debug_mode)

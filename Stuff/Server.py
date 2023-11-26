@@ -11,8 +11,10 @@ class Server:
         self._subnet: str = subnet.strip()
         self._x_coord: int = x_coord
         self._y_coord: int = y_coord
-        self._username: str = username
-        self._password: str = password
+        self._username: str = username.strip()
+        self._password: str = password.strip()
+        self.port: int = 0
+        self.fqdn: str = ""
 
     def __str__(self):
         return f"""
@@ -22,6 +24,7 @@ HA Type: {self._ha_type}
 Subnet: {self._subnet}
 Username: {self._username}
 Password: {self._password}
+Port: {self.port}
 Coords: [{self._x_coord}, {self._y_coord}]
 """
     

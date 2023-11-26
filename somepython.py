@@ -39,6 +39,7 @@ TODO ☑️ rewrite support commandline args, should see if i want to do it by h
 from openpyxl import load_workbook
 
 from Stuff.Apps import C_app
+from Stuff import Hosts_helpers
 
 import argparse
 import sys
@@ -48,11 +49,14 @@ def main():
     # First driver to get the file as input, either through commandline argument on launch or through interactive user input
     parser = argparse.ArgumentParser(prog="Automation App", description="This script takes in a .XLSX file and run sysadmin like functions on its contents.")
     parser.add_argument('filename')
-    parser.add_argument("-v", default=1, help="verbose logging", type=int)
+    parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose mode')
     
     final_filename = ""   
+    debug_mode = False
+
     if len(sys.argv) >= 2:
         args = parser.parse_args()
+
         # Clean up filename for a few scenarios
         args.filename = sanatize_filepath(args.filename)
         if is_filepath_legit(args.filename):
@@ -63,6 +67,8 @@ def main():
                 if is_filepath_legit(args.filename):
                     final_filename = args.filename
                     break
+        if args.verbose:
+            debug_mode = True
     else:
         print("No arguments provided.")
         while True:
@@ -71,24 +77,31 @@ def main():
             if is_filepath_legit(file_path):
                 final_filename = file_path
                 break
-    # DEBUG
-    print("File path:", final_filename)
-    # Replace filename here with final_filename. Hardcoded to make my life easier for now.
-    wb = load_workbook(filename = '/mnt/c/Users/dgame/Downloads/Excels/V2/test.xlsx', read_only=True)
-
+    #DEBUG###################################
+    if debug_mode:
+        print("File path:", final_filename)
+    #DEBUG###################################
+    try:
+        #wb = load_workbook(filename = '/mnt/c/Users/dgame/Downloads/Excels/V2/test.xlsx', read_only=True)
+        wb = load_workbook(filename = final_filename, read_only=True)
+    except:
+        print("⛔ That's not a proper Excel file ⛔\nExiting...")
+        return
+    
+    
     # this is where all the Server objects will go
     list_of_servers = []
-    
-    selected_app = Find_apps(wb)
 
+    # set this down below and use it later for checkspecs, and firewall functions
+    what_app_is_this = ""
+
+
+    selected_app = Find_apps(wb)
     match selected_app:
         case "C" | "C5" | "CB" :
             sheet = wb[selected_app]
-            # run C function
-            # C(sheet)
-            print("Run C")
-            #C_app.get_C_app_implementation_type(sheet)
-            C_app.main(sheet, list_of_servers)
+
+            C_app.main(sheet, list_of_servers, debug_mode)
             ...
         case "B":
             sheet = wb[selected_app]
@@ -104,15 +117,39 @@ def main():
         case _:
             raise ValueError("Invalid Sheet. Exiting")
 
-   
+    #DEBUG#############################
+    if debug_mode:
+        for server in list_of_servers:
+            print(server)
+    #DEBUG#############################
+##########################################################################################################################################################################################
+   # Now that we have built out the servers and have everything we need at the moment, we prompt the user for what they actually want to do
+    while True:
+        print("What would you like to do?")
+        print("1) Check Specifications")
+        print("2) Make and deploy Hosts file")
+        print("3) Open firewall ports")
+        print("4) Exit")
+        choice = input("Please enter the number corresponding to you choice: ")
 
- 
+        match choice:
+            case "1":
+                ...
+                # checkspecs(list_of_servers, what_app_is_this)
+            case "2":
+                #  Grab domain, if cant find it prompt user for domain and run host helpers
+                Hosts_helpers.main(list_of_servers, "FQDN", True, debug_mode)
+            case "3":
+                ...
+                # firewallscript(list_of_servers, what_app_is_this)
+            case "4":
+                break
+            case _:
+                print("Invalid input. Please enter a number for your choice")
+        
+  
+    # End program or add option for advanced mode
     print("END")
-    
-
-
-
-
 
 
 
@@ -160,8 +197,7 @@ def is_filepath_legit(file_path: str) -> bool:
         print("Invalid file path or file does not exist. Please enter a valid file path.")
         return False
 
-
-def Find_apps(workbook):
+def Find_apps(workbook) -> str:
     """
     Print out the discovered sheets and gets the users input for what App they want to work on.
 
