@@ -28,7 +28,7 @@ Helper functions I need:
     Plus way way more
 
 SSH functions I need:
-    FTP function
+☑️ FTP function
     Firewall function should take in a app and maybe take those ports in as a global var?
     Bash command function
     More I'm forgetting at the moment
@@ -36,10 +36,11 @@ SSH functions I need:
 TODO ☑️ rewrite support commandline args, should see if i want to do it by hand or use argparse as well. Might be better off because its more versatile    
     
 """
-from openpyxl import load_workbook
+
+from openpyxl import load_workbook, worksheet, workbook
 
 from Stuff.Apps import C_app
-from Stuff import Hosts_helpers
+from Stuff import Hosts_helpers, Server
 
 import argparse
 import sys
@@ -79,7 +80,7 @@ def main():
                 break
     #DEBUG###################################
     if debug_mode:
-        print("File path:", final_filename)
+        print("Full File path:", final_filename)
     #DEBUG###################################
     try:
         #wb = load_workbook(filename = '/mnt/c/Users/dgame/Downloads/Excels/V2/test.xlsx', read_only=True)
@@ -119,48 +120,53 @@ def main():
 
     #DEBUG#############################
     if debug_mode:
+        print("After App.main function")
         for server in list_of_servers:
             print(server)
+        print("------------------------------")
     #DEBUG#############################
 ##########################################################################################################################################################################################
+   
    # Now that we have built out the servers and have everything we need at the moment, we prompt the user for what they actually want to do
     while True:
-        print("What would you like to do?")
+        print("\nWhat would you like to do?")
         print("1) Check Specifications")
         print("2) Make and deploy Hosts file")
         print("3) Open firewall ports")
         print("4) Exit")
-        choice = input("Please enter the number corresponding to you choice: ")
-
+        choice = input("\nPlease enter the number corresponding to you choice: ")
+        
         match choice:
-            case "1":
+            case "1": # Check Specs #
                 ...
                 # checkspecs(list_of_servers, what_app_is_this)
-            case "2":
-                #  Grab domain, if cant find it prompt user for domain and run host helpers
-                # forgot the logic for this is complicated. Might need to redo some stuff. 
-                # TODO make find_FQDNs helper function, need to take in the network sheet search for subnets and that they exist, then match the subnet to the servers subnet, then assign the domain name to it
-                # put that function call here 
-                
-                
-                
+            case "2": # Make & Deploy Hosts file #
+                try:
+                    network_sheet = wb["Networks"]
+                except:
+                    print("Could not open Networks tab ⚠️\n")
+                    manually_add_FQDNs(list_of_servers)
+        
                 while True:
-                    print("Do you also want to deploy the hosts file?")
+                    print("\nDo you also want to deploy the hosts file?")
                     print("1) Yes, deploy the hosts file for me")
                     print("2) No, just generate it")
                     to_deploy_or_not_to_deploy = input("Please enter the number corresponding to you choice: ")
                     if to_deploy_or_not_to_deploy == "1":
-                        #deploy
-                        Hosts_helpers.main(list_of_servers, "FQDN", True, debug_mode)
+                        # deploy
+                        Hosts_helpers.main(list_of_servers, network_sheet, True, debug_mode)
+                        break
                     if to_deploy_or_not_to_deploy == "2":
                         # not deploy
-                        Hosts_helpers.main(list_of_servers, "FQDN", False, debug_mode)
+                        Hosts_helpers.main(list_of_servers, network_sheet, False, debug_mode)
+                        print(f"\nHosts file generated in: {os.path.dirname(os.path.realpath(__file__))}/hosts ")
+                        break
                     else:
                         print("Invalid input. Please enter 1 or 2 for your choice")
-            case "3":
+            case "3": # Open firewall ports #
                 ...
                 # firewallscript(list_of_servers, what_app_is_this)
-            case "4":
+            case "4": # Exit #
                 break
             case _:
                 print("Invalid input. Please enter a number for your choice")
@@ -215,7 +221,7 @@ def is_filepath_legit(file_path: str) -> bool:
         print("Invalid file path or file does not exist. Please enter a valid file path.")
         return False
 
-def Find_apps(workbook) -> str:
+def Find_apps(workbook: workbook) -> str:
     """
     Print out the discovered sheets and gets the users input for what App they want to work on.
 
@@ -254,11 +260,21 @@ def Find_apps(workbook) -> str:
             print("Invalid input. Please enter a valid number.")
     return selected_sheet
 
+def manually_add_FQDNs(servers: list[Server.Server] ):
+    """Manually ask the user for the fqdn for each server and set it here before needing it in the hosts file creation
 
+    Args:
+        servers (list[Server.Server]): The list of servers we are operating on
+    """
 
+    print("Entering manual mode for FQDN assignment...\n")
 
-
-
+    for server in servers:
+        manual_fqdn = input(f"Please enter the domain name to use for {server._hostname}: ")
+        server.fqdn = manual_fqdn
+        print(f"FQDN set as: {server.fqdn}")
+    print("FQDN assignment complete ✅")
+    # Could make this ask the user to confirm if they made a mistake and rerun it
 
 
 ###############################################################         EOF          ###########################################################################################################################

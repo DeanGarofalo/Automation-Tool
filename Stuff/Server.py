@@ -14,11 +14,12 @@ class Server:
         self._username: str = username.strip()
         self._password: str = password.strip()
         self.port: int = 0
-        self.fqdn: str = ""
+        self._fqdn = None
 
     def __str__(self):
         return f"""
 Hostname: {self._hostname}
+FQDN: {self.fqdn}
 IP Address: {self.ip_address}
 HA Type: {self._ha_type}
 Subnet: {self._subnet}
@@ -28,6 +29,14 @@ Port: {self.port}
 Coords: [{self._x_coord}, {self._y_coord}]
 """
     
+    @property
+    def fqdn(self) -> str:
+        return self._fqdn
+
+    @fqdn.setter
+    def fqdn(self, domain_name: str) -> None:
+        self._fqdn = self._hostname + "." + domain_name.strip()
+
     @property
     def ip_address(self) -> str:
         return self._ip_address

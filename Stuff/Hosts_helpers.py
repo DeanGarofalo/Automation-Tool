@@ -1,4 +1,5 @@
 import paramiko
+from openpyxl import load_workbook, worksheet
 import os
 import sys
 
@@ -9,13 +10,13 @@ sys.path.append(project_directory)
 
 from Stuff.Server import Server
 
-# not totally useless, can still use this if they have to provide a domain name manually because the search failed
-def generate_fqdns(domain_name: str, list_of_servers: list[Server]) -> None:
-    for server in list_of_servers:
-        server.fqdn = server._hostname + "." + domain_name
-       
-
 def generate_hosts_file(list_of_servers: list[Server], debug_mode: bool) -> None:
+    """ This creates the host file and overwrites old ones if found
+
+    Args:
+        list_of_servers (list[Server]): The list of server objects 
+        debug_mode (bool): whether to print debugging lines or not
+    """
     # Check if the hosts file exists, and delete it, if it does, because this would append to a old one if not done
     file_path="hosts"
     if os.path.exists(file_path):
@@ -33,6 +34,13 @@ def generate_hosts_file(list_of_servers: list[Server], debug_mode: bool) -> None
             print("Hosts file successfully created")
 
 def copy_hosts_file(remote_server: Server, debug_mode: bool) -> None:
+    """ This function is what connects to the actual server in question and runs a cat to write to the local hosts file
+
+    Args:
+        remote_server (Server): The server object which contains the IP and credentials to use
+        debug_mode (bool): Whether to print debugging lines
+    """
+    
     path_of_temp_hosts_file = "hosts"
     remote_path='/etc/hosts'
 
@@ -61,12 +69,53 @@ def copy_hosts_file(remote_server: Server, debug_mode: bool) -> None:
         # Close the SSH connection
         ssh.close()
 
-def main(servers: list[Server], domain_name: str, deploy: bool, debug_mode: bool) -> None:
-   
-    # use domain and assign it fqdn domain for all servers 
-    generate_fqdns(domain_name, servers)
- 
+
+def generate_FQDNs(servers: list[Server], worksheet: worksheet ) -> None:
+    """ If everything is where we expect it to be in the Excel worksheet, then we build the fqdns from the domain name corresponding to each subnet
+
+    Args:
+        servers (list[Server]): the list of server objects
+        worksheet (worksheet): The excel network sheet which would contain the domain name for each subnet
+    """
+    # make an assumption that they dont have more than 10 different subnets for a single piece of infrastructure which ive never seen
+    for column in range(1, 10):
+        # This [3,x] coord is by assumption they did not mess up the worksheet 
+        if worksheet.cell(3, column).value != None:
+            for j in range(len(servers)):
+                # check if the cell which should have a subnet name matches the individual servers subnet
+                if worksheet.cell(3, column).value == servers[j]._subnet:
+                    # check if that subnet has a domain name entry in the cell
+                    if worksheet.cell(9, column).value == "None":
+                        # If theres no domain name matching the subnet entry 
+                        print(f"Could not find a domain name for {servers[j]._subnet}")
+                        user_fqdn = input(f"Please enter the domain to use for {servers[j]._hostname}:")
+                        servers[j].fqdn = user_fqdn
+                    else:
+                        servers[j].fqdn = worksheet.cell(9, column).value
+
+
+def main(servers: list[Server], network_sheet: worksheet, deploy: bool, debug_mode: bool) -> None:
+    """ This is the driver for the Host functions
+
+    Args:
+        servers (list[Server]): the list of servers
+        network_sheet (worksheet): the network sheet of the excel workbook
+        deploy (bool): whether we run the copy_hosts_file function
+        debug_mode (bool): whether we print the debugging lines
+    """
+    
+    if debug_mode:
+        print("\nBefore generate_FQDNS call\n")
+        for server in servers:
+            print(server)
     # make the host file in the local directory
+    generate_FQDNs(servers, network_sheet)
+    
+    if debug_mode:
+        print("\nAfter generate_FQDNS call\n")
+        for server in servers:
+            print(server)
+    
     generate_hosts_file(servers, debug_mode)
 
     # Copy hosts file to each server
@@ -84,9 +133,10 @@ if __name__ == "__main__":
         Server("DG1234", "192.168.8.6", "3N1D", "subnet2", 10, 20, "u", "p"),
         Server("DG1234", "192.168.8.7", "3N1D", "subnet2", 10, 20, "u", "p")
     ]
-    test_fqdn = "fake.company.com"
-    deploy = True
-    debug = False
+    wb = load_workbook(filename = 'test.xlsx', read_only=True)
+    network_sheet = wb["Networks"]
+    deploy = False
+    debug = True
 
-    main(Test_List_of_Servers, test_fqdn, deploy, debug)
+    main(Test_List_of_Servers, network_sheet, deploy, debug)
     
