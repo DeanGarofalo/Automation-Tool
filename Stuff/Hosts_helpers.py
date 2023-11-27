@@ -1,7 +1,15 @@
 import paramiko
 import os
+import sys
+
+# Again this is so wack that I have to do this.
+current_directory = os.path.dirname(os.path.realpath(__file__))
+project_directory = os.path.dirname(current_directory)
+sys.path.append(project_directory)
+
 from Stuff.Server import Server
 
+# not totally useless, can still use this if they have to provide a domain name manually because the search failed
 def generate_fqdns(domain_name: str, list_of_servers: list[Server]) -> None:
     for server in list_of_servers:
         server.fqdn = server._hostname + "." + domain_name
@@ -47,6 +55,8 @@ def copy_hosts_file(remote_server: Server, debug_mode: bool) -> None:
                 print("Host file deployed")
     except TimeoutError:
         print(f"Connetion timed out for {remote_server.ip_address}\tDid not deploy hosts file ⚠️")
+    except OSError:
+        print(f"Network is unreachable when attempting to ssh to {remote_server.ip_address}\tDid not deploy hosts file ⚠️")
     finally:
         # Close the SSH connection
         ssh.close()

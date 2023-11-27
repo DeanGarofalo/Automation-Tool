@@ -5,9 +5,7 @@ import sys
 current_directory = os.path.dirname(os.path.realpath(__file__))
 project_directory = os.path.dirname(os.path.dirname(current_directory))
 sys.path.append(project_directory)
-#print(current_directory)
-#print(project_directory)
-#from Stuff import Server
+
 from Stuff.Server import Server, is_valid_ip
 from Stuff.Excel_helpers import is_cell_green, is_cell_orange, get_cell_fill_color
 

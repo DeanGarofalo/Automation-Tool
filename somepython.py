@@ -138,7 +138,25 @@ def main():
                 # checkspecs(list_of_servers, what_app_is_this)
             case "2":
                 #  Grab domain, if cant find it prompt user for domain and run host helpers
-                Hosts_helpers.main(list_of_servers, "FQDN", True, debug_mode)
+                # forgot the logic for this is complicated. Might need to redo some stuff. 
+                # TODO make find_FQDNs helper function, need to take in the network sheet search for subnets and that they exist, then match the subnet to the servers subnet, then assign the domain name to it
+                # put that function call here 
+                
+                
+                
+                while True:
+                    print("Do you also want to deploy the hosts file?")
+                    print("1) Yes, deploy the hosts file for me")
+                    print("2) No, just generate it")
+                    to_deploy_or_not_to_deploy = input("Please enter the number corresponding to you choice: ")
+                    if to_deploy_or_not_to_deploy == "1":
+                        #deploy
+                        Hosts_helpers.main(list_of_servers, "FQDN", True, debug_mode)
+                    if to_deploy_or_not_to_deploy == "2":
+                        # not deploy
+                        Hosts_helpers.main(list_of_servers, "FQDN", False, debug_mode)
+                    else:
+                        print("Invalid input. Please enter 1 or 2 for your choice")
             case "3":
                 ...
                 # firewallscript(list_of_servers, what_app_is_this)
