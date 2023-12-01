@@ -9,6 +9,7 @@ from Stuff.Server import Server
 import re
 
 # These are the minimum specs that the program will check against. If they ever change, they can be updated right here and once.
+##################################################################################
 B_APP_SPECS = [
     {"Tier": "Low Traffic", "CPU": 4, "RAM": 16, "Disk": 250},
     {"Tier": "High Traffic", "CPU": 6, "RAM": 32, "Disk": 250},
@@ -17,29 +18,43 @@ B_APP_SPECS = [
 B_APP_CONECT = [
     {"Tier": "Valid", "CPU": 4, "RAM": 8, "Disk": 250}
 ]
-
-C_APP_SPECS = [
-    {"Tier": "Limited capacity", "CPU": "8", "RAM": "16", "Disk": "210"},
-    {"Tier": "Full capacity", "CPU": "16", "RAM": "32", "Disk": "210"},
+##################################################################################
+##################################################################################
+C_NOT_HA_SPECS = [
+    {"Tier": "Limited capacity", "CPU": 8, "RAM": 16, "Disk": 210},
+    {"Tier": "Full capacity", "CPU": 16, "RAM": 32, "Disk": 210},
 ]
-C_REP_SPECS =[]
-C_HA_APP = []
-C_HA_REP = []
-
+C_HA_APP = [
+    {"Tier": "Full capacity", "CPU": 16, "RAM": 16, "Disk": 210}
+]
+C_HA_REP = [
+    {"Tier": "Full capacity", "CPU": 16, "RAM": 32, "Disk": 210}
+]
+##################################################################################
+##################################################################################
 D_APP_SPECS = [
     {"Tier": "Valid", "CPU": 4, "RAM": 16, "Disk": 160}
 ]
-
+##################################################################################
+##################################################################################
 S_APP_SPECS = [
     {"Tier": "Valid", "CPU": 4, "RAM": 32, "Disk": 150}
 ]
-
+##################################################################################
 
 def main(servers: list[Server], what_app_is_this: str, deployment_type: str):
     
     match what_app_is_this:
         case "C":
-            ...
+            for server in servers:
+                retrieved_specs = get_remote_specs(server)
+                spec = check_specs_c_app(server, retrieved_specs, deployment_type)
+                if spec == "None":
+                    print(f"{server._hostname} does not meet minimum specification ⛔")
+                if spec == "Limited capacity":
+                    print(f"{server._hostname} is a Low capacity configuration ⚠️") 
+                if spec == "Full capacity":
+                    print(f"{server._hostname} meets minimum specification ✅")
         case "B":
             for server in servers:
                 retrieved_specs = get_remote_specs(server)
@@ -77,36 +92,54 @@ def main(servers: list[Server], what_app_is_this: str, deployment_type: str):
 
 
 
-
+# These can all be one function but it requires a bit more thought than I want to give it at the moment. 
+# Come back to this later 
 def check_specs_b_app(server: Server, fetched_specs: dict) -> str:
     max_spec = "None"
     if "Connector" in server._ha_type:
-        #TODO Come back here later to do this for a connector
-        ...
+        for valid_spec in B_APP_CONECT:
+            if fetched_specs["CPU"] >= valid_spec["CPU"] and fetched_specs["RAM"] >= valid_spec["RAM"] and fetched_specs["Disk"] >= valid_spec["Disk"]:
+                max_spec = valid_spec["Tier"]
+        return max_spec
     else:
         for valid_spec in B_APP_SPECS:
             if fetched_specs["CPU"] >= valid_spec["CPU"] and fetched_specs["RAM"] >= valid_spec["RAM"] and fetched_specs["Disk"] >= valid_spec["Disk"]:
                 max_spec = valid_spec["Tier"]
     return max_spec
     
-def check_specs_d_app(server: Server, fetched_specs: dict) -> str:
+def check_specs_d_app(fetched_specs: dict) -> str:
     max_spec = "None"
- 
     for valid_spec in D_APP_SPECS:
         if fetched_specs["CPU"] >= valid_spec["CPU"] and fetched_specs["RAM"] >= valid_spec["RAM"] and fetched_specs["Disk"] >= valid_spec["Disk"]:
             max_spec = valid_spec["Tier"]
     return max_spec
 
-def check_specs_s_app(server: Server, fetched_specs: dict) -> str:
+def check_specs_s_app(fetched_specs: dict) -> str:
     max_spec = "None"
- 
     for valid_spec in S_APP_SPECS:
         if fetched_specs["CPU"] >= valid_spec["CPU"] and fetched_specs["RAM"] >= valid_spec["RAM"] and fetched_specs["Disk"] >= valid_spec["Disk"]:
             max_spec = valid_spec["Tier"]
     return max_spec
 
-def check_specs_c_app():
-    ...
+def check_specs_c_app(server: Server, fetched_specs: dict, deployment_type: str) -> str:
+    max_spec = "None"
+    # If its a HA we need to use the HA specs
+    if "HA" in deployment_type:
+        # Need to split HA's between Reporting servers and everything else
+        if "Report" in server._ha_type:
+            for valid_spec in C_HA_REP:
+                if fetched_specs["CPU"] >= valid_spec["CPU"] and fetched_specs["RAM"] >= valid_spec["RAM"] and fetched_specs["Disk"] >= valid_spec["Disk"]:
+                    max_spec = valid_spec["Tier"]
+        else:
+            for valid_spec in C_HA_APP:
+                if fetched_specs["CPU"] >= valid_spec["CPU"] and fetched_specs["RAM"] >= valid_spec["RAM"] and fetched_specs["Disk"] >= valid_spec["Disk"]:
+                    max_spec = valid_spec["Tier"]
+    # Otherwise its an app or DB server
+    else:
+        for valid_spec in C_NOT_HA_SPECS:
+            if fetched_specs["CPU"] >= valid_spec["CPU"] and fetched_specs["RAM"] >= valid_spec["RAM"] and fetched_specs["Disk"] >= valid_spec["Disk"]:
+                max_spec = valid_spec["Tier"]
+    return max_spec
 
 
 #TODO redo this to just only take in localhost since im going to be using those tunnels
@@ -156,7 +189,7 @@ def get_remote_specs(server: Server) -> dict:
 
 if __name__=="__main__":
     password = input("Enter vm password: ")
-    test_Server = [Server("test-VM", "192.168.1.149", "Node", "subnet1", 2, 2, "dean", password)]
-    app = "B"
-    deploy = "3N1DC"
+    test_Server = [Server("test-VM", "192.168.1.149", "Primary Reporting", "subnet1", 2, 2, "dean", password)]
+    app = "C"
+    deploy = "HA with Reporting"
     main(test_Server, app, deploy)

@@ -14,6 +14,7 @@ def is_cell_green(sheet, row, column) -> bool:
             return True
     except AttributeError:
         return False
+    return False
 
 def is_cell_orange(sheet, row, column) -> bool:
     cell = sheet.cell(row, column)
@@ -23,3 +24,9 @@ def is_cell_orange(sheet, row, column) -> bool:
             return True
     except AttributeError:
         return False
+    return False
+    
+def is_good_app(app: str):
+    if app in ["SMGR", "SM"]:
+        return False
+    return True

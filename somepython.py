@@ -40,7 +40,7 @@ TODO ☑️ rewrite support commandline args, should see if i want to do it by h
 from openpyxl import load_workbook, worksheet, workbook
 
 from Stuff.Apps import C_app
-from Stuff import Hosts_helpers, Server
+from Stuff import Hosts, Server, Specs
 
 import argparse
 import sys
@@ -57,7 +57,6 @@ def main():
 
     if len(sys.argv) >= 2:
         args = parser.parse_args()
-
         # Clean up filename for a few scenarios
         args.filename = sanatize_filepath(args.filename)
         if is_filepath_legit(args.filename):
@@ -92,29 +91,28 @@ def main():
     
     # this is where all the Server objects will go
     list_of_servers = []
-
     # set this down below and use it later for checkspecs, and firewall functions
     what_app_is_this = ""
-
+    what_type_of_deployment = ""
 
     selected_app = Find_apps(wb)
     match selected_app:
         case "C" | "C5" | "CB" :
             sheet = wb[selected_app]
-
-            C_app.main(sheet, list_of_servers, debug_mode)
-            ...
+            what_type_of_deployment = C_app.main(sheet, list_of_servers, debug_mode)
+            what_app_is_this = "C"
         case "B":
             sheet = wb[selected_app]
-            # run B function
-            # B(sheet)
             print("Run B")
-            ...
+            what_app_is_this = "B"
         case "S":
             sheet = wb[selected_app]
-            # run S function
-            # S(sheet)
-            ...
+            print("Run S")
+            what_app_is_this = "S"
+        case "D":
+            sheet = wb[selected_app]
+            print("Run D")
+            what_app_is_this = "D"
         case _:
             raise ValueError("Invalid Sheet. Exiting")
 
@@ -138,15 +136,14 @@ def main():
         
         match choice:
             case "1": # Check Specs #
-                ...
-                # checkspecs(list_of_servers, what_app_is_this)
+                Specs.main(list_of_servers, what_app_is_this, what_type_of_deployment)
             case "2": # Make & Deploy Hosts file #
                 try:
                     network_sheet = wb["Networks"]
                 except:
                     print("Could not open Networks tab ⚠️\n")
                     manually_add_FQDNs(list_of_servers)
-        
+                    
                 while True:
                     print("\nDo you also want to deploy the hosts file?")
                     print("1) Yes, deploy the hosts file for me")
@@ -154,11 +151,11 @@ def main():
                     to_deploy_or_not_to_deploy = input("Please enter the number corresponding to you choice: ")
                     if to_deploy_or_not_to_deploy == "1":
                         # deploy
-                        Hosts_helpers.main(list_of_servers, network_sheet, True, debug_mode)
+                        Hosts.main(list_of_servers, network_sheet, True, debug_mode)
                         break
                     if to_deploy_or_not_to_deploy == "2":
                         # not deploy
-                        Hosts_helpers.main(list_of_servers, network_sheet, False, debug_mode)
+                        Hosts.main(list_of_servers, network_sheet, False, debug_mode)
                         print(f"\nHosts file generated in: {os.path.dirname(os.path.realpath(__file__))}/hosts ")
                         break
                     else:

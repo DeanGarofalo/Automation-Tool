@@ -7,7 +7,7 @@ project_directory = os.path.dirname(os.path.dirname(current_directory))
 sys.path.append(project_directory)
 
 from Stuff.Server import Server, is_valid_ip
-from Stuff.Excel_helpers import is_cell_green, is_cell_orange, get_cell_fill_color
+from Stuff.Excel_helpers import is_cell_green, is_cell_orange, get_cell_fill_color, is_good_app
 
 ## These guys are the general assumption I make where the relevant data should be.
 ## Changing them widens or tightens the search area the count function runs on, and effect the speed and accuracy of the server discovery
@@ -20,7 +20,7 @@ MIN_COL_RANGE = 1
 
 
 
-def main(sheet_name, the_servers: list, debug_mode: bool):
+def main(sheet_name, the_servers: list, debug_mode: bool) -> str:
     
     implementation_type: str = ""
     match count_C_app_servers(sheet_name, the_servers, get_C_app_implementation_type(sheet_name)):
@@ -49,22 +49,8 @@ def main(sheet_name, the_servers: list, debug_mode: bool):
             print(server)
     #DEBUG#############################
 
- 
+    return implementation_type
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
 
 
 
@@ -118,7 +104,7 @@ def count_C_app_servers(sheet_name, list_of_servers, implementation_type) -> int
         int: the number of servers counted
     """
     count = 0
-    if implementation_type == "Migration" or "Upgrade":
+    if implementation_type == ("Migration" or "Upgrade"):
         # check for green cells in counting because migrations & upgrades have the old and new servers which would lead to ambiguous counts
         for row in range(MIN_ROW_RANGE, MAX_ROW_RANGE):
             for column in range(MIN_COL_RANGE, MAX_COL_RANGE):
@@ -128,11 +114,11 @@ def count_C_app_servers(sheet_name, list_of_servers, implementation_type) -> int
                         # Debug
                         # print(str(sheet_name.cell(row, column).value), "Coord:", row, column)
                         # Check to see if there's a provided username/password. If not assign default logins
-                        if str(sheet_name.cell(row, column+5).value == "None"):
+                        if str(sheet_name.cell(row, column+5).value) == "None":
                             username = "user"
                         else:
                             username = str(sheet_name.cell(row, column+5).value)
-                        if str(sheet_name.cell(row, column+6).value == "None"):
+                        if str(sheet_name.cell(row, column+6).value) == "None":
                             password = "password@123"
                         else:
                             password= str(sheet_name.cell(row, column+6).value)
@@ -143,15 +129,15 @@ def count_C_app_servers(sheet_name, list_of_servers, implementation_type) -> int
             for column in range(MIN_COL_RANGE, MAX_COL_RANGE):
                 # If the cell is empty move along
                 if sheet_name.cell(row, column).value != None:
-                    if is_valid_ip(str(sheet_name.cell(row, column).value)) and (is_cell_green(sheet_name, row, column) or is_cell_orange(sheet_name, row, column) ):
+                    if is_valid_ip(str(sheet_name.cell(row, column).value)) and  ( is_cell_green(sheet_name, row, column) or is_cell_orange(sheet_name, row, column) ) and is_good_app(sheet_name.cell(row, 1).value) :
                         # Debug
                         # print(str(sheet_name.cell(row, column).value), "Coord:", row, column)
                         # Check to see if there's a provided username/password. If not assign default logins
-                        if str(sheet_name.cell(row, column+5).value == "None"):
+                        if str(sheet_name.cell(row, column+5).value) == "None":
                             username = "user"
                         else:
                             username = str(sheet_name.cell(row, column+5).value)
-                        if str(sheet_name.cell(row, column+6).value == "None"):
+                        if str(sheet_name.cell(row, column+6).value) == "None":
                             password = "password@123"
                         else:
                             password= str(sheet_name.cell(row, column+6).value)
@@ -264,21 +250,6 @@ def is_valid_deployment(list_of_servers: list, implementation_type: str) -> bool
                     return True
         case _:
             return False
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
