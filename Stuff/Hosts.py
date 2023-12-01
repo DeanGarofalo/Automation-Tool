@@ -58,15 +58,16 @@ def copy_hosts_file(remote_server: Server, debug_mode: bool) -> None:
         with open(path_of_temp_hosts_file, 'r') as local_file:
             if debug_mode:
                 print("Attempting copy")
-            ssh.exec_command(f'sudo sh -c "cat > {remote_path}"', stdin=local_file)
+            ssh.exec_command(f'sudo -S sh -c "cat > {remote_path}"', stdin=local_file)
             if debug_mode:
                 print("Host file deployed")
     except TimeoutError:
         print(f"Connetion timed out for {remote_server.ip_address}\tDid not deploy hosts file ⚠️")
     except OSError:
         print(f"Network is unreachable when attempting to ssh to {remote_server.ip_address}\tDid not deploy hosts file ⚠️")
+    except Exception as e:
+        print(f"Error: {e}")
     finally:
-        # Close the SSH connection
         ssh.close()
 
 
@@ -127,7 +128,7 @@ def main(servers: list[Server], network_sheet: worksheet, deploy: bool, debug_mo
 if __name__ == "__main__":
     # For Testing
     Test_List_of_Servers = [
-        Server("DG1234", "192.168.8.3", "3N1D", "subnet1", 10, 20, "usernaem", "p123"),
+        Server("DG1234", "192.168.8.3", "3N1D", "subnet1", 10, 20, "username", "p123"),
         Server("DG1234", "192.168.8.4", "3N1D", "subnet1", 10, 20, "u", "p"),
         Server("DG1234", "192.168.8.5", "3N1D", "subnet1", 10, 20, "u", "p"),
         Server("DG1234", "192.168.8.6", "3N1D", "subnet2", 10, 20, "u", "p"),

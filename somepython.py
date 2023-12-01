@@ -40,7 +40,7 @@ TODO ☑️ rewrite support commandline args, should see if i want to do it by h
 from openpyxl import load_workbook, worksheet, workbook
 
 from Stuff.Apps import C_app
-from Stuff import Hosts, Server, Specs
+from Stuff import Hosts, Server, Specs, Firewall
 
 import argparse
 import sys
@@ -161,8 +161,7 @@ def main():
                     else:
                         print("Invalid input. Please enter 1 or 2 for your choice")
             case "3": # Open firewall ports #
-                ...
-                # firewallscript(list_of_servers, what_app_is_this)
+                Firewall.main(list_of_servers, what_app_is_this)
             case "4": # Exit #
                 break
             case _:

@@ -2,8 +2,7 @@ from ipaddress import IPv4Address #
 from ipaddress import AddressValueError
 
 class Server:
-    
-    
+     
     def __init__(self, hostname: str, ip_address: IPv4Address, ha_type: str, subnet: str, x_coord: int, y_coord: int, username: str, password: str ) -> None:
         self._hostname: str = hostname.strip()
         self.ip_address: str = ip_address
