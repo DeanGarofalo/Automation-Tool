@@ -10,7 +10,7 @@ from Stuff.Server import Server
 # These are the network port for each app. If they need to be updated they can be adjusted here. 
 C_PORTS = ["22/tcp", "80/tcp", "450/tcp", "2181/tcp", "2888-3888/tcp", "3697/tcp", "4369/tcp", "5060/tcp", "6177/tcp", "6178/tcp", "6179/tcp", "6198/tcp", "6200-7999/tcp", "8006/tcp", "8007/tcp", "8008/tcp", "8009/tcp", "8011/tcp", "8070/tcp", "8080/tcp", "8081/tcp", "8086/tcp", "8087/tcp", "8089/tcp", "8093/tcp", "8097/tcp", "8098/tcp", "8099/tcp", "8985/tcp", "9092/tcp", "33337/tcp"]
 B_PORTS = ["22/tcp", "80/tcp", "443/tcp", "1099/tcp", "2181/tcp", "3191/tcp", "4174/tcp", "4191/tcp", "6040/tcp", "6050/tcp", "7103/tcp", "7104-7124/tcp", "7200/tcp", "7201/tcp", "8099/tcp", "8443/tcp", "9092/tcp", "9093/tcp", "9200/tcp", "9300/tcp", "10161/tcp", "10162/tcp", "52233/tcp" ]
-S_PORTS = ["443/tcp", "9080/tcp", "9180/tcp", "9192/tcp", "6443/tcp", "10250/tcp", "10251/tcp", "10252/tcp", "10255/tcp", "2379-2380/tcp", "30000-32767/tcp", "123/udp"] # this single udp port is an edge case which requires each port to specify tcp now
+S_PORTS = ["443/tcp", "9080/tcp", "9180/tcp", "9192/tcp", "6443/tcp", "10250/tcp", "10251/tcp", "10252/tcp", "10255/tcp", "2379-2380/tcp", "30000-32767/tcp", "123/udp"] # this single udp port is an edge case which requires each port to specify /tcp now
 D_PORTS = ["22/tcp", "80/tcp", "443/tcp", "5432/tcp", "8944/tcp", "8945/tcp"]
 
 

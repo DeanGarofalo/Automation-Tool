@@ -1,13 +1,16 @@
 # What is this?
-This is my attempt at learning Python by reimagining one of my prior C# applications in Python minus a GUI.
+This is my attempt at learning Python by reimagining one of my prior C# applications in Python minus a GUI. If you want to see what that *looked* like [click here.](https://github.com/DeanGarofalo/Automation-Tool-Winapp)
 
 # What does this do exactly?
-The as aforementioned Automation-Tool would take in a specific type of formatted *"Excel"* file, and run *"operations"* based on a user's selected input through checkboxes on a Windows GUI.
+The as aforementioned [Automation-Tool](https://github.com/DeanGarofalo/Automation-Tool-Winapp) would take in a specific type of formatted *"Excel"* file, and run *"operations"* based on a user's selected input through checkboxes on a Windows GUI.
 
 Okay that's still pretty vague, can you be more specific? What's in the Excel and what are the operations it can do?
 
 ## The Excel file
 Let's say you have a workbook of server credentials, filled with IP addresses, FQDN's, subnets, passwords, etc. And suppose each of those servers are various types of application servers which can be databases, unique applications, or smaller components of large horizontally scaled applications. The workbook provides a human readable format of a particular client's environment and its footprint. 
+Looks something like this:
+![Screenshot 2023-12-05 182419](https://github.com/DeanGarofalo/Automation-Tool-CLI/assets/49959557/39bc7608-632a-4b9b-ab38-908f615b3d96)
+
 
 ## The Operations
 This tool was initially designed to automate some of the tedious work that someone would have to do in order to access a certain environment, like: 
@@ -29,6 +32,9 @@ There were also some optional features such as:
 # Why
 I will be attempting to recreate some if not most of this functionality as a learning experiment or until I get bored.
 
-Since I really don't want to learn how to make a GUI again, this time the ideal is to run this as a command line script on the Excel file, have it grab the types of application servers recognized and then prompt the user via command line for what they want to do next. 
+Since I really don't want to learn how to make a GUI again, this time the idea is to run this as a command line script on the Excel file, have it grab the types of application servers recognized and then prompt the user via command line for what they want to do next. 
 
 Since I'm going to be designing this in a Linux environment this time and not a Windows one, I may explore ditching PuTTY all together. TBD.
+
+# Screenshots
+![image](https://github.com/DeanGarofalo/Automation-Tool-CLI/assets/49959557/eee2a371-3704-4c61-914c-e88dc0db0477)

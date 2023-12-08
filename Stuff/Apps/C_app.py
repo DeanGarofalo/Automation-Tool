@@ -10,13 +10,13 @@ from Stuff.Server import Server, is_valid_ip
 from Stuff.Excel_helpers import is_cell_green, is_cell_orange, get_cell_fill_color, is_good_app
 
 ## These guys are the general assumption I make where the relevant data should be.
-## Changing them widens or tightens the search area the count function runs on, and effect the speed and accuracy of the server discovery
+## Changing them widens or tightens the search area the count function runs on, and affect the speed and accuracy of the server discovery
 MAX_ROW_RANGE = 28
 MIN_ROW_RANGE = 7
 
 MAX_COL_RANGE = 5
 MIN_COL_RANGE = 1
-# Change if the search area is too small its missing servers, or too big its grabbing other non relevant servers
+# Change if the search area is too small it's missing servers, or too big it's grabbing other non relevant servers
 
 
 

@@ -25,7 +25,8 @@ def is_cell_orange(sheet, row, column) -> bool:
     except AttributeError:
         return False
     return False
-    
+
+ # if we saw this, went too far and should discard entry   
 def is_good_app(app: str):
     if app in ["SMGR", "SM"]:
         return False

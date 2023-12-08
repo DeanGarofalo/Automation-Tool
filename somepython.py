@@ -38,13 +38,14 @@ TODO ☑️ rewrite support commandline args, should see if i want to do it by h
 """
 
 from openpyxl import load_workbook, worksheet, workbook
-
 from Stuff.Apps import C_app
-from Stuff import Hosts, Server, Specs, Firewall
-
+from Stuff import Hosts, Server, Specs, Firewall, SSH_Config
 import argparse
 import sys
 import os
+
+# These are the apps the program supports. When a new one is added, append its name here for the main driver to allow it
+SUPPORTED_APPS = ["C", "C5", "D", "B", "S"]
 
 def main():
     # First driver to get the file as input, either through commandline argument on launch or through interactive user input
@@ -82,12 +83,10 @@ def main():
         print("Full File path:", final_filename)
     #DEBUG###################################
     try:
-        #wb = load_workbook(filename = '/mnt/c/Users/dgame/Downloads/Excels/V2/test.xlsx', read_only=True)
         wb = load_workbook(filename = final_filename, read_only=True)
     except:
         print("⛔ That's not a proper Excel file ⛔\nExiting...")
         return
-    
     
     # this is where all the Server objects will go
     list_of_servers = []
@@ -123,8 +122,41 @@ def main():
             print(server)
         print("------------------------------")
     #DEBUG#############################
-##########################################################################################################################################################################################
+
    
+    
+    
+    while True:
+        user_input = input("Do you have access to each of the servers?" + " (yes/no): ").lower()
+        if user_input in ['yes', 'y']:
+            break
+        elif user_input in ['no', 'n']:
+            break
+        else:
+            print("Please enter 'yes'/'y' or 'no'/'n'.")
+
+
+
+
+
+
+    test_server = Server.Server("test-vm", "192.168.1.149", "", "", 0, 0, "dean", "")
+    while True:
+        print("What would you like you ssh profile to be named?")
+        profilename = input(": ")
+        if len(profilename) != 0:
+            SSH_Config.main(list_of_servers, profilename, test_server)
+            break
+        else:
+            print("Please enter a valid input")
+
+
+
+
+
+
+
+############################################################### Main menu ###########################################################################################################################
    # Now that we have built out the servers and have everything we need at the moment, we prompt the user for what they actually want to do
     while True:
         print("\nWhat would you like to do?")
@@ -167,7 +199,7 @@ def main():
             case _:
                 print("Invalid input. Please enter a number for your choice")
         
-  
+  ############################################################### Main menu ###########################################################################################################################
     # End program or add option for advanced mode
     print("END")
 
@@ -228,7 +260,7 @@ def Find_apps(workbook: workbook) -> str:
         selected_sheet (str): Returns the str of the app the user selected which in turn is the sheet to work on.
     """
     # var with supported apps, maybe should be global const instead of here?
-    allowed_sheets = ["C", "C5", "D", "B", "S", "Networks", "VoIP"]
+    # SUPPORTED_APPS = ["C", "C5", "D", "B", "S"]
 
     # Get the sheet names
     sheet_names = workbook.sheetnames
@@ -237,7 +269,7 @@ def Find_apps(workbook: workbook) -> str:
     print("Which application would you like to work on?")
     allowed_sheet_indices = []
     for i, name in enumerate(sheet_names, start=1):
-        if name in allowed_sheets:
+        if name in SUPPORTED_APPS:
             allowed_sheet_indices.append(i)
             print(f"{len(allowed_sheet_indices)}. {name}")
 
