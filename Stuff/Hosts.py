@@ -34,7 +34,12 @@ def generate_hosts_file(list_of_servers: list[Server], debug_mode: bool) -> None
             print("Hosts file successfully created")
 
 def copy_hosts_file(remote_server: Server, debug_mode: bool) -> None:
-    """ This function is what connects to the actual server in question and runs a cat to write to the local hosts file
+    """ This function is what connects to the actual server in question and runs a ftp command to get the host file onto the machine and then move it into its proper place.
+    I had to rewrite this because it's a pain to deal with sudo when using a ssh library. The solution i ended up with was using sftp to just get the file onto the server
+    and then using echo "password" | sudo -S cp ..... This is obviously not exactly secure but I really don't care that much since I'm never deploying this code which is famous last words i know.
+    The proper way of doing it I guess would be to setup a sshkey for this, but then that kinda gets me back to sqaure one where this is intending to be the first time im connecting to this box so 
+    I end up with a chicken and the egg problem with the chicken being the passing the password in plaintext, and the egg being the ssh key which needs sudo to setup.
+    I could also probably clear the history of the last 2 commands to make sure I dont leave the password in plaintext, but on my ubuntu server VM i havent seen it so im going to pretend this is 100% fine.
 
     Args:
         remote_server (Server): The server object which contains the IP and credentials to use
@@ -42,7 +47,7 @@ def copy_hosts_file(remote_server: Server, debug_mode: bool) -> None:
     """
     
     path_of_temp_hosts_file = "hosts"
-    remote_path='/etc/hosts'
+    remote_path = "/tmp/hosts"
 
     # Create an SSH client
     ssh = paramiko.SSHClient()
@@ -54,13 +59,27 @@ def copy_hosts_file(remote_server: Server, debug_mode: bool) -> None:
             print(f"Attempting SSH with {remote_server.ip_address} using User:{remote_server._username} & Pass:{remote_server._password}")
         ssh.connect(remote_server.ip_address, username=remote_server._username, password=remote_server._password, timeout=10)
 
-        # Copy the local hosts file to the remote server
-        with open(path_of_temp_hosts_file, 'r') as local_file:
-            if debug_mode:
-                print("Attempting copy")
-            ssh.exec_command(f'sudo -S sh -c "cat > {remote_path}"', stdin=local_file)
-            if debug_mode:
-                print("Host file deployed")
+        # Copy the local hosts file to the remote server in a temp dir
+        if debug_mode:
+            print("Attempting copy")
+        sftp = ssh.open_sftp()
+        sftp.put(path_of_temp_hosts_file, remote_path)
+        if debug_mode:
+            print("Host file deployed in /tmp/hosts")
+            print("Making backup of hosts file into /tmp/hosts.old")
+        # make a backup of the existing remote servers hosts file
+        _, stdout, stderr= ssh.exec_command(f"echo {remote_server._password} | sudo -S cp /etc/hosts /tmp/hosts.old")
+        if debug_mode:
+            print(f"Output: {stdout.read().decode()}")
+            print(f"Error: {stderr.read().decode()}")
+            print("Attempting move of hosts file from /tmp/hosts to /etc/hosts")
+        # move the newly ftped hosts file from /tmp to /etc and override the existing one
+        _, stdout, stderr= ssh.exec_command(f"echo {remote_server._password} | sudo -S cp /tmp/hosts /etc/hosts")
+        if debug_mode:
+            print(f"Output: {stdout.read().decode()}")
+            print(f"Error: {stderr.read().decode()}")
+        print(f"Hosts file deployed in /etc/hosts for: {remote_server.ip_address} ✅")
+    
     except TimeoutError:
         print(f"Connetion timed out for {remote_server.ip_address}\tDid not deploy hosts file ⚠️")
     except OSError:
@@ -138,6 +157,8 @@ if __name__ == "__main__":
     network_sheet = wb["Networks"]
     deploy = False
     debug = True
+
+   
 
     main(Test_List_of_Servers, network_sheet, deploy, debug)
     
