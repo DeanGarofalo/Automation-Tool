@@ -85,7 +85,7 @@ def copy_hosts_file(remote_server: Server, debug_mode: bool) -> None:
     except OSError:
         print(f"Network is unreachable when attempting to ssh to {remote_server.ip_address}\tDid not deploy hosts file ⚠️")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error: {e} ⛔")
     finally:
         ssh.close()
 

@@ -3,7 +3,7 @@ from ipaddress import AddressValueError
 
 class Server:
      
-    def __init__(self, hostname: str, ip_address: IPv4Address, ha_type: str, subnet: str, x_coord: int, y_coord: int, username: str, password: str ) -> None:
+    def __init__(self, hostname: str, ip_address: str, ha_type: str, subnet: str, x_coord: int, y_coord: int, username: str, password: str ) -> None:
         self._hostname: str = hostname.strip()
         self.ip_address: str = ip_address
         self._ha_type: str = ha_type.strip()
@@ -64,3 +64,28 @@ def is_valid_ip(ip: IPv4Address) -> bool:
         return True
     except AddressValueError:
         return False
+    
+
+class Jumpserver:
+    def __init__(self, ip_address: str, type: str, vpn_id: str):
+        self.ip_address: str = ip_address
+        self._type: str = type.strip()
+        self._vpn_id: str = vpn_id.strip()
+    
+    @property
+    def ip_address(self) -> str:
+        return self._ip_address
+
+    @ip_address.setter
+    def ip_address(self, ip_address: str) -> None:
+        if not is_valid_ip(ip_address.replace(" ", "")):
+            raise ValueError(f"Invalid IP of {ip_address.replace(' ' , '')}")
+        self._ip_address = ip_address.replace(" ", "")
+
+
+    def __str__(self):
+        return f"""
+IP Address: {self.ip_address}
+Type: {self._type}
+VPN_ID: {self._vpn_id}
+"""

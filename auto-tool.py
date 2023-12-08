@@ -124,33 +124,20 @@ def main():
     #DEBUG#############################
 
    
-    
-    
+    """
+    This is a key part where this program differs from my GUI automation tool.
+    If you have direct access to all the servers, then this tool will just let you run those command below.
+    If not, we would have to find a jump server and then create a ssh profile with tons of tunnels to connect to later
+    """
     while True:
-        user_input = input("Do you have access to each of the servers?" + " (yes/no): ").lower()
+        user_input = input("Do you have direct access to each of the servers?" + " (yes/no): ").lower()
         if user_input in ['yes', 'y']:
             break
         elif user_input in ['no', 'n']:
+            ssh_config_driver(list_of_servers, wb)
             break
         else:
             print("Please enter 'yes'/'y' or 'no'/'n'.")
-
-
-
-
-
-
-    test_server = Server.Server("test-vm", "192.168.1.149", "", "", 0, 0, "dean", "")
-    while True:
-        print("What would you like you ssh profile to be named?")
-        profilename = input(": ")
-        if len(profilename) != 0:
-            SSH_Config.main(list_of_servers, profilename, test_server)
-            break
-        else:
-            print("Please enter a valid input")
-
-
 
 
 
@@ -304,6 +291,42 @@ def manually_add_FQDNs(servers: list[Server.Server] ):
     print("FQDN assignment complete ✅")
     # Could make this ask the user to confirm if they made a mistake and rerun it
 
+def find_jumpserver(wb: workbook) -> Server.Jumpserver:
+    """So I'm not going to write this function because its diving into how the propritary vpn would work.   
+    Basically this function would search specifc sheets if they existed for an specific pattern. It would be an IP Address followed by a VPN ID number 
+    which would be in a very specifc format which we can match by a regex pattern easily. Then ideally I store all that in the jump server class object and maybe a list of them 
+    if I find multiple. On windows I could launch the vpn after getting the VPN ID here. On Linux (which this project cenetered arround now) I have no way of doing it so this is where this program stops trying to be a 1 to 1 replication of the prior automation tool.
+    Therefore heres a IP address to use as the jump server.
+
+    Args:
+        wb (workbook): _description_
+
+    Returns:
+        str: _description_
+    """
+    return Server.Jumpserver("172.168.10.10", "VM1", "1244556")
+
+
+def ssh_config_driver(list_of_servers: list[Server.Server], wb: workbook):
+    test_server = find_jumpserver(wb)
+    while True:
+        print("What would you like you ssh profile to be named?")
+        profilename = input(": ")
+        if len(profilename) != 0:
+            SSH_Config.main(list_of_servers, profilename, test_server)
+            break
+        else:
+            print("Please enter a valid input")
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 ###############################################################         EOF          ###########################################################################################################################
 if __name__ == "__main__":
